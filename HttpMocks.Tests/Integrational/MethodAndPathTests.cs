@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -20,7 +21,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestSuccessWhenGetReturn302()
+        public async Task TestSuccessWhenGetReturn302()
         {
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
@@ -30,7 +31,7 @@ namespace HttpMocks.Tests.Integrational
             }
 
             var url = BuildUrl(DefaultMockUrl, "/bills");
-            var response = Send(url, "GET");
+            var response = await SendAsync(url, HttpMethod.Get);
 
             response.StatusCode.ShouldBeEquivalentTo(302);
             response.ContentBytes.Length.ShouldBeEquivalentTo(0);
@@ -39,9 +40,9 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestSuccessWhenHeadersDefined()
+        public async Task TestSuccessWhenHeadersDefined()
         {
-            var headers = new NameValueCollection {{"X-Header-Name", "Header_Value"}};
+            var headers = new NameValueCollection { { "X-Header-Name", "Header_Value" } };
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
                 httpMock
@@ -51,11 +52,11 @@ namespace HttpMocks.Tests.Integrational
             }
 
             var url = BuildUrl(DefaultMockUrl, "/");
-            var responseA = Send(url, "GET");
+            var responseA = await SendAsync(url, HttpMethod.Get);
 
             responseA.StatusCode.ShouldBeEquivalentTo(500);
 
-            var responseB = Send(url, "GET", headers: headers);
+            var responseB = await SendAsync(url, HttpMethod.Get, headers: headers);
 
             responseB.StatusCode.ShouldBeEquivalentTo(200);
 
@@ -65,9 +66,9 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestSuccessWhenQueryDefined()
+        public async Task TestSuccessWhenQueryDefined()
         {
-            var query = new NameValueCollection {{"qp", "qv"}};
+            var query = new NameValueCollection { { "qp", "qv" } };
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
                 httpMock
@@ -76,11 +77,11 @@ namespace HttpMocks.Tests.Integrational
                     .ThenResponse(200);
             }
 
-            var responseA = Send(BuildUrl(DefaultMockUrl, "/"), "GET");
+            var responseA = await SendAsync(BuildUrl(DefaultMockUrl, "/"), HttpMethod.Get);
 
             responseA.StatusCode.ShouldBeEquivalentTo(500);
 
-            var responseB = Send(BuildUrl(DefaultMockUrl, "/", query), "GET");
+            var responseB = await SendAsync(BuildUrl(DefaultMockUrl, "/", query), HttpMethod.Get);
 
             responseB.StatusCode.ShouldBeEquivalentTo(200);
 
@@ -90,7 +91,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestFailWhenActualRepeatMoreThatExpected()
+        public async Task TestFailWhenActualRepeatMoreThatExpected()
         {
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
@@ -102,9 +103,9 @@ namespace HttpMocks.Tests.Integrational
 
             var url = BuildUrl(DefaultMockUrl, "/bills");
 
-            Send(url, "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(url, HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
-            Send(url, "GET").StatusCode.ShouldBeEquivalentTo(500);
+            (await SendAsync(url, HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(500);
 
             HttpMocks.Invoking(m => m.VerifyAll())
                 .ShouldThrowExactly<AssertHttpMockException>()
@@ -112,7 +113,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestFailWhenDefaultActualRepeatMoreThatExpected()
+        public async Task TestFailWhenDefaultActualRepeatMoreThatExpected()
         {
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
@@ -123,9 +124,9 @@ namespace HttpMocks.Tests.Integrational
 
             var url = BuildUrl(DefaultMockUrl, "/bills");
 
-            Send(url, "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(url, HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
-            Send(url, "GET").StatusCode.ShouldBeEquivalentTo(500);
+            (await SendAsync(url, HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(500);
 
             HttpMocks.Invoking(m => m.VerifyAll())
                 .ShouldThrowExactly<AssertHttpMockException>()
@@ -133,7 +134,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestFailWhenAnyActualRepeatMoreThatExpected()
+        public async Task TestFailWhenAnyActualRepeatMoreThatExpected()
         {
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
@@ -145,15 +146,15 @@ namespace HttpMocks.Tests.Integrational
 
             var url = BuildUrl(DefaultMockUrl, "/bills");
 
-            Send(url, "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(url, HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
-            Send(url, "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(url, HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
             HttpMocks.VerifyAll();
         }
 
         [Test]
-        public void TestSuccessWhenGetReturn200AndResult()
+        public async Task TestSuccessWhenGetReturn200AndResult()
         {
             const string testDataString = "Test data";
             var content = Encoding.UTF8.GetBytes(testDataString);
@@ -167,7 +168,7 @@ namespace HttpMocks.Tests.Integrational
             }
 
             var url = BuildUrl(DefaultMockUrl, "/bills");
-            var response = Send(url, "GET");
+            var response = await SendAsync(url, HttpMethod.Get);
 
             response.StatusCode.ShouldBeEquivalentTo(200);
             response.ContentBytes.Length.ShouldBeEquivalentTo(content.Length);
@@ -177,7 +178,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestFailWhenActualIsNotExpectedRequest()
+        public async Task TestFailWhenActualIsNotExpectedRequest()
         {
             using (var httpMock = HttpMocks.New(DefaultMockUrl))
             {
@@ -187,7 +188,7 @@ namespace HttpMocks.Tests.Integrational
             }
 
             var url = BuildUrl(DefaultMockUrl, "/bills");
-            var response = Send(url, "GET");
+            var response = await SendAsync(url, HttpMethod.Get);
 
             response.StatusCode.ShouldBeEquivalentTo(500);
             response.ContentBytes.Length.ShouldBeEquivalentTo(0);
@@ -198,7 +199,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestSuccessWhenResponseFromDelegate()
+        public async Task TestSuccessWhenResponseFromDelegate()
         {
             var paths = new List<string>();
 
@@ -214,10 +215,10 @@ namespace HttpMocks.Tests.Integrational
                     .WhenRequestGet("/bills/@guid")
                     .ThenResponse(i => processRequestInfo(i));
             }
-            
+
             var guid = Guid.NewGuid();
             var url = BuildUrl(DefaultMockUrl, $"/bills/{guid}");
-            var response = Send(url, "GET");
+            var response = await SendAsync(url, HttpMethod.Get);
 
             response.StatusCode.ShouldBeEquivalentTo(200);
             response.ContentBytes.Length.ShouldBeEquivalentTo(0);
@@ -229,7 +230,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestSuccessWhenResponseFromAsyncDelegate()
+        public async Task TestSuccessWhenResponseFromAsyncDelegate()
         {
             var paths = new List<string>();
 
@@ -248,7 +249,7 @@ namespace HttpMocks.Tests.Integrational
 
             var guid = Guid.NewGuid();
             var url = BuildUrl(DefaultMockUrl, $"/bills/{guid}");
-            var response = Send(url, "GET");
+            var response = await SendAsync(url, HttpMethod.Get);
 
             response.StatusCode.ShouldBeEquivalentTo(200);
             response.ContentBytes.Length.ShouldBeEquivalentTo(0);

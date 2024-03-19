@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Specialized;
-using System.IO;
 using System.Linq;
-using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace HttpMocks.Tests.Integrational
@@ -31,18 +32,19 @@ namespace HttpMocks.Tests.Integrational
 
             if (query != null)
             {
-                uriBuilder.Query = string.Join("&", query.AllKeys.Select(x => $"{x}={query[(string) x]}"));
+                uriBuilder.Query = string.Join("&", query.AllKeys.Select(x => $"{x}={query[x]}"));
             }
 
             return uriBuilder.Uri;
         }
 
-        protected static TestResponse Send(Uri url, string method, byte[] contentBytes = null, string contentType = null, NameValueCollection headers = null)
+        protected static async Task<TestResponse> SendAsync(Uri url, HttpMethod method, byte[] contentBytes = null,
+            string contentType = null, NameValueCollection headers = null)
         {
             try
             {
-                var request = WebRequest.Create(url);
-                request.Method = method;
+                var client = new HttpClient();
+                var request = new HttpRequestMessage(method, url);
 
                 if (headers != null)
                 {
@@ -52,52 +54,35 @@ namespace HttpMocks.Tests.Integrational
                     }
                 }
 
-                if (contentBytes != null && contentBytes.Length > 0)
+                if (contentBytes is { Length: > 0 })
                 {
-                    using (var stream = request.GetRequestStream())
-                    {
-                        stream.Write(contentBytes, 0, contentBytes.Length);
-                    }
+                    request.Content = new ByteArrayContent(contentBytes);
                     if (contentType != null)
                     {
-                        request.ContentType = contentType;
+                        request.Content.Headers.ContentType = new MediaTypeHeaderValue(contentType);
                     }
                 }
 
-                request.Timeout = 2000;
+                client.Timeout = TimeSpan.FromMilliseconds(2000);
 
-                var httpWebResponse = (HttpWebResponse)request.GetResponse();
-                return Convert(httpWebResponse);
+                var httpWebResponse = await client.SendAsync(request);
+                return await ConvertAsync(httpWebResponse);
             }
-            catch (WebException e)
+            catch (HttpRequestException)
             {
-                if (e.Response != null)
-                {
-                    return Convert((HttpWebResponse)e.Response);
-                }
-
                 return TestResponse.Create(452);
             }
         }
 
-        private static TestResponse Convert(HttpWebResponse httpWebResponse)
+        private static async Task<TestResponse> ConvertAsync(HttpResponseMessage httpWebResponse)
         {
-            return TestResponse.Create((int)httpWebResponse.StatusCode, ReadResponseContentBytes(httpWebResponse));
+            return TestResponse.Create((int)httpWebResponse.StatusCode,
+                await ReadResponseContentBytesAsync(httpWebResponse));
         }
 
-        private static byte[] ReadResponseContentBytes(HttpWebResponse httpWebResponse)
+        private static async Task<byte[]> ReadResponseContentBytesAsync(HttpResponseMessage httpWebResponse)
         {
-            if (httpWebResponse.ContentLength <= 0)
-            {
-                return new byte[0];
-            }
-
-            var mem = new MemoryStream();
-            using (var stream = httpWebResponse.GetResponseStream())
-            {
-                stream?.CopyTo(mem, (int)httpWebResponse.ContentLength);
-                return mem.ToArray();
-            }
+            return await httpWebResponse.Content.ReadAsByteArrayAsync();
         }
     }
 }

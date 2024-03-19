@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Threading.Tasks;
 using FluentAssertions;
 using NUnit.Framework;
 
@@ -7,7 +9,7 @@ namespace HttpMocks.Tests.Integrational
     public class HttpMockClusterTests : IntegrationalTestsBase
     {
         [Test]
-        public void TestSuccess()
+        public async Task TestSuccess()
         {
             IHttpMock httpMock1;
             using (httpMock1 = HttpMocks.NewCluster("localhost", 2))
@@ -17,7 +19,7 @@ namespace HttpMocks.Tests.Integrational
                     .ThenResponse(200);
             }
 
-            Send(BuildUrl(httpMock1.MockUri, "/bills/1"), "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(BuildUrl(httpMock1.MockUri, "/bills/1"), HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
         }
     }
 }

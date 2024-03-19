@@ -1,3 +1,5 @@
+using System.Net.Http;
+using System.Threading.Tasks;
 using FluentAssertions;
 using HttpMocks.Exceptions;
 using NUnit.Framework;
@@ -12,7 +14,7 @@ namespace HttpMocks.Tests.Integrational
         }
 
         [Test]
-        public void TestSuccess()
+        public async Task TestSuccess()
         {
             IHttpMock httpMock1;
             using (httpMock1 = HttpMocks.New("localhost", 3465))
@@ -30,14 +32,14 @@ namespace HttpMocks.Tests.Integrational
                     .ThenResponse(200);
             }
 
-            Send(BuildUrl(httpMock1.MockUri, "/bills/1"), "GET").StatusCode.ShouldBeEquivalentTo(200);
-            Send(BuildUrl(httpMock2.MockUri, "/bills/2"), "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(BuildUrl(httpMock1.MockUri, "/bills/1"), HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(BuildUrl(httpMock2.MockUri, "/bills/2"), HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
             HttpMocks.VerifyAll();
         }
 
         [Test]
-        public void TestNotActualWhenRepeatCountMoreActualCount()
+        public async Task TestNotActualWhenRepeatCountMoreActualCount()
         {
             IHttpMock httpMock1;
             using (httpMock1 = HttpMocks.New("localhost", 3465))
@@ -48,13 +50,13 @@ namespace HttpMocks.Tests.Integrational
                     .Repeat(2);
             }
 
-            Send(BuildUrl(httpMock1.MockUri, "/bills/1"), "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(BuildUrl(httpMock1.MockUri, "/bills/1"), HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
             HttpMocks.Invoking(x => x.VerifyAll()).ShouldThrow<AssertHttpMockException>();
         }
 
         [Test]
-        public void TestNotActualWhenNotExpected()
+        public async Task TestNotActualWhenNotExpected()
         {
             IHttpMock httpMock1;
             using (httpMock1 = HttpMocks.New("localhost", 3465))
@@ -68,7 +70,7 @@ namespace HttpMocks.Tests.Integrational
                     .ThenResponse(200);
             }
 
-            Send(BuildUrl(httpMock1.MockUri, "/bills/1"), "GET").StatusCode.ShouldBeEquivalentTo(200);
+            (await SendAsync(BuildUrl(httpMock1.MockUri, "/bills/1"), HttpMethod.Get)).StatusCode.ShouldBeEquivalentTo(200);
 
             HttpMocks.Invoking(x => x.VerifyAll()).ShouldThrow<AssertHttpMockException>();
         }

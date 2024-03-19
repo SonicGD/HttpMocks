@@ -1,29 +1,17 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <AssemblyTitle>HttpMocks.Tests</AssemblyTitle>
-    <Product>HttpMocks.Tests</Product>
-    <Copyright>Copyright ©  116</Copyright>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <TargetFrameworks>net461;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Castle.Core" Version="5.0.0" />
-    <PackageReference Include="FluentAssertions" Version="4.15.0" />
-    <PackageReference Include="Moq" Version="4.18.1" />
-    <PackageReference Include="NUnit" Version="3.13.3" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Xml.Linq, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-      <HintPath>..\..\..\..\..\usr\lib\mono\4.5-api\System.Xml.Linq.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\HttpMocks\HttpMocks.csproj" />
-  </ItemGroup>
+    <PropertyGroup>
+        <AssemblyTitle>HttpMocks.Tests</AssemblyTitle>
+        <Product>HttpMocks.Tests</Product>
+        <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="FluentAssertions" Version="4.15.0"/>
+        <PackageReference Include="Moq" Version="4.18.1"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0"/>
+        <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+        <PackageReference Include="NUnit" Version="3.13.3"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\HttpMocks\HttpMocks.csproj"/>
+    </ItemGroup>
 </Project>

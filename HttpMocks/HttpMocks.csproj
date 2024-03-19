@@ -2,13 +2,12 @@
   <PropertyGroup>
     <AssemblyTitle>Http Mocks</AssemblyTitle>
     <Product>Http Mocks</Product>
-    <OutputPath>bin\$(Configuration)\</OutputPath>
-    <TargetFrameworks>net461;net5.0;net6.0</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugType>full</DebugType>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+    <PackageId>Billy.HttpMocks</PackageId>
+    <Authors>Shalin Andrey, Kontur.Billing</Authors>
+    <PackageProjectUrl>https://git.skbkontur.ru/billy/HttpMocks</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <RepositoryUrl>https://git.skbkontur.ru/billy/HttpMocks</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
 </Project>

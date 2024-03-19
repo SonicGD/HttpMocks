@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using HttpMocks.Whens;
 using HttpMocks.Whens.RequestPatterns;
+
+[assembly: InternalsVisibleTo("HttpMocks.Tests")]
 
 namespace HttpMocks
 {
